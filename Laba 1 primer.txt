@@ -1,0 +1,137 @@
+Примеры кода
+Приложение
+Законченное консольное приложение на Java, демонстрирующее использование всех базовых конструкций: переменные, условия, циклы, массивы, методы, классы, объекты, исключения, ввод/вывод и логирование с Log4j. Пример сопровождается подробными комментариями.
+
+Пример: Система оценки студентов с логированием
+
+Описание: Программа запрашивает имя студента, количество предметов, оценки по каждому предмету, рассчитывает средний балл, определяет статус (сдал/не сдал), логирует все действия и ошибки.
+
+Структура проекта:
+
+StudentGrader/
+
+– log4j.properties
+
+– Student.java
+
+– Grader.java
+
+– Main.java
+
+log4j.properties
+
+log4j.rootLogger=INFO, stdout, file
+log4j.appender.stdout=org.apache.log4j.ConsoleAppender
+log4j.appender.stdout.layout=org.apache.log4j.PatternLayout
+log4j.appender.stdout.layout.ConversionPattern=%d %-5p %c - %m%n
+log4j.appender.file=org.apache.log4j.FileAppender
+log4j.appender.file.File=logs/app.log
+log4j.appender.file.layout=org.apache.log4j.PatternLayout
+log4j.appender.file.layout.ConversionPattern=%d %-5p %c - %m%n
+Student.java
+
+public class Student { 
+    String name; 
+    int[] grades; 
+    
+    public Student(String name, int subjectCount) { 
+        this.name = name; 
+        this.grades = new int[subjectCount]; 
+    } 
+    
+    public void setGrade(int index, int grade) { 
+        grades[index] = grade; 
+    } 
+    
+    public double calculateAverage() { 
+        int sum = 0; 
+        for (int grade : grades) { 
+            sum += grade; 
+        } 
+        return (double) sum / grades.length; 
+    } 
+    
+    public boolean isPassed() { 
+        return calculateAverage() >= 60; 
+    } 
+}
+Комментарии:
+
+– метод calculateAverage() вычисляет средний балл;
+
+– вызов метода упрощает основной код;
+
+– метод isPassed() – возвращает true, если средний балл ≥ 60.
+
+Grader.java
+
+import org.apache.log4j.Logger;
+
+public class Grader { 
+    static Logger logger = Logger.getLogger(Grader.class); 
+    
+    public void evaluate(Student student) { 
+        logger.info("Оценка студента: " + student.name); 
+        double avg = student.calculateAverage(); 
+        logger.info("Средний балл: " + avg); 
+        
+        if (student.isPassed()) { 
+            System.out.println("Студент " + student.name + " сдал."); 
+            logger.info("Статус: Сдал"); 
+        } else { 
+            System.out.println("Студент " + student.name + " не сдал."); 
+            logger.warn("Статус: Не сдал"); 
+        } 
+    } 
+}
+Комментарии:
+
+– класс Grader содержит метод evaluate() для анализа студента;
+
+– используется логгер для записи информации и предупреждений.
+
+Main.java
+
+import java.util.Scanner;
+import org.apache.log4j.Logger;
+
+public class Main { 
+    static Logger logger = Logger.getLogger(Main.class); 
+    
+    public static void main(String[] args) { 
+        Scanner scanner = new Scanner(System.in); 
+        
+        try { 
+            System.out.print("Введите имя студента: "); 
+            String name = scanner.nextLine(); 
+            
+            System.out.print("Введите количество предметов: "); 
+            int count = scanner.nextInt(); 
+            
+            if (count <= 0) { 
+                throw new IllegalArgumentException("Количество предметов должно быть > 0"); 
+            } 
+            
+            Student student = new Student(name, count); 
+            
+            for (int i = 0; i < count; i++) { 
+                System.out.print("Оценка по предмету " + (i + 1) + ": "); 
+                int grade = scanner.nextInt(); 
+                
+                if (grade < 0 || grade > 100) { 
+                    throw new IllegalArgumentException("Оценка должна быть от 0 до 100"); 
+                } 
+                student.setGrade(i, grade); 
+            } 
+            
+            Grader grader = new Grader(); 
+            grader.evaluate(student); 
+            
+        } catch (Exception e) { 
+            System.out.println("Ошибка: " + e.getMessage()); 
+            logger.error("Исключение: " + e.toString()); 
+        } finally { 
+            logger.info("Программа завершена"); 
+        } 
+    } 
+}
